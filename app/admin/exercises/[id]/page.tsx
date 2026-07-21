@@ -1,0 +1,7 @@
+"use client";
+import Link from "next/link";
+import { use } from "react";
+import { ManagerRoute } from "@/components/auth/manager-route";
+import { ExerciseEditor } from "@/components/content/exercise-editor";
+import { AppHeader } from "@/components/layout/app-header";
+export default function EditExercisePage({ params }: { params: Promise<{ id: string }> }) { const { id } = use(params); return <ManagerRoute><div className="min-h-screen bg-slate-50"><AppHeader /><main className="mx-auto max-w-5xl px-6 py-10"><Link href="/admin/exercises" className="text-sm text-slate-500">← Упражнения</Link><h1 className="mt-4 text-3xl font-bold">Редактирование упражнения</h1><div className="mt-8"><ExerciseEditor exerciseId={id} /></div></main></div></ManagerRoute>; }

@@ -1,5 +1,12 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Service URLs
+
+- `AUTH_SERVICE_URL` defaults to `http://localhost:8000`.
+- `CONTENT_SERVICE_URL` defaults to `http://localhost:8001`.
+
+The browser uses same-origin route handlers under `/api/auth` and `/api/content`.
+
 ## Getting Started
 
 First, run the development server:
