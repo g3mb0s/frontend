@@ -3,9 +3,10 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createExercise, getManagedExercise, updateExercise } from "@/lib/content/api";
+import { generateExercise } from "@/lib/ai/api";
 import type { ExerciseInput, ExerciseType } from "@/lib/content/types";
 import { splitList } from "@/lib/utils/collections";
-import { newExercise } from "./model";
+import { buildGenerationRequest, newExercise, type AiExerciseForm } from "./model";
 
 export function useExerciseEditor(exerciseId?: string) {
   const router = useRouter();
@@ -15,6 +16,9 @@ export function useExerciseEditor(exerciseId?: string) {
   const [saving, setSaving] = useState(false);
   const [preview, setPreview] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [aiOpen, setAiOpen] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [generationError, setGenerationError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!exerciseId) return;
@@ -50,5 +54,51 @@ export function useExerciseEditor(exerciseId?: string) {
     }
   }
 
-  return { exercise, tags, loading, saving, preview, message, setTags, setPreview, updateExercise: updateExerciseState, changeType, save };
+  function openAiGenerator() {
+    setGenerationError(null);
+    setAiOpen(true);
+  }
+
+  function closeAiGenerator() {
+    if (!generating) setAiOpen(false);
+  }
+
+  async function generateWithAi(form: AiExerciseForm) {
+    setGenerating(true);
+    setGenerationError(null);
+    try {
+      const generation = await generateExercise(buildGenerationRequest(form));
+      const generated = generation.exercises[0];
+      if (!generated) throw new Error("ИИ не вернул упражнение");
+
+      setExercise(generated);
+      setTags(generated.tags.join(", "));
+      setMessage(null);
+      setAiOpen(false);
+    } catch (error) {
+      setGenerationError(error instanceof Error ? error.message : "Не удалось сгенерировать упражнение");
+    } finally {
+      setGenerating(false);
+    }
+  }
+
+  return {
+    exercise,
+    tags,
+    loading,
+    saving,
+    preview,
+    message,
+    aiOpen,
+    generating,
+    generationError,
+    setTags,
+    setPreview,
+    updateExercise: updateExerciseState,
+    changeType,
+    openAiGenerator,
+    closeAiGenerator,
+    generateWithAi,
+    save,
+  };
 }

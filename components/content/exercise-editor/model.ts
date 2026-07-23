@@ -1,4 +1,5 @@
 import type { ExerciseInput, ExerciseType } from "@/lib/content/types";
+import type { GenerateExerciseRequest } from "@/lib/ai/types";
 
 export const exerciseTypes: { value: ExerciseType; label: string }[] = [
   { value: "fill_gap_choice", label: "Выбор пропуска" },
@@ -35,4 +36,37 @@ export function objectList(value: unknown) {
 
 export function stringList(value: unknown) {
   return Array.isArray(value) ? value.join(", ") : "";
+}
+
+export interface AiExerciseForm {
+  topic: string;
+  type: ExerciseType;
+  level: string;
+  itemCount: number;
+  tags: string;
+  instructions: string;
+  audioUrl: string;
+}
+
+export function buildGenerationRequest(form: AiExerciseForm): GenerateExerciseRequest {
+  const itemInstruction = `Создай ${form.itemCount} ${russianTaskCount(form.itemCount)} внутри массива content.items.`;
+  const extraInstructions = [itemInstruction, form.instructions.trim()]
+    .filter(Boolean)
+    .join("\n");
+
+  return {
+    topic: form.topic.trim(),
+    level: form.level.trim(),
+    exercise_type: form.type,
+    count: 1,
+    tags: form.tags.split(",").map((tag) => tag.trim()).filter(Boolean),
+    extra_instructions: extraInstructions,
+    audio_url: form.type === "sentence_from_audio" ? form.audioUrl.trim() : null,
+  };
+}
+
+function russianTaskCount(count: number) {
+  if (count === 1) return "задание";
+  if (count >= 2 && count <= 4) return "задания";
+  return "заданий";
 }
