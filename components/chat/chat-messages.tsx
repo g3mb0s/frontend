@@ -51,7 +51,7 @@ export function ChatMessages({ messages, state, isSending, error }: ChatMessages
             </div>
           </article>
         ))}
-        {isSending && (
+        {isSending && messages.at(-1)?.role !== "assistant" && (
           <div className="flex items-center gap-3 text-sm text-slate-400" role="status">
             <div className="grid size-8 place-items-center rounded-full bg-indigo-600 text-white">
               <SparkleIcon className="size-4" />

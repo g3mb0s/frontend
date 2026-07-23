@@ -5,7 +5,7 @@ import {
   createConversation,
   getConversation,
   listConversations,
-  sendChatMessage,
+  streamChatMessage,
 } from "@/lib/ai/api";
 import type { ChatMessage, ConversationSummary } from "@/lib/ai/types";
 import { conversationTitle } from "./model";
@@ -21,6 +21,8 @@ export function useChat() {
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const activeLoad = useRef(0);
+  const activeSend = useRef(0);
+  const streamController = useRef<AbortController | null>(null);
 
   const loadConversations = useCallback(async () => {
     setListState("loading");
@@ -41,7 +43,15 @@ export function useChat() {
     return () => window.clearTimeout(timeoutId);
   }, [loadConversations]);
 
+  useEffect(() => {
+    return () => streamController.current?.abort();
+  }, []);
+
   const selectConversation = useCallback(async (id: string) => {
+    activeSend.current += 1;
+    streamController.current?.abort();
+    streamController.current = null;
+    setIsSending(false);
     const loadId = ++activeLoad.current;
     setActiveId(id);
     setMessages([]);
@@ -61,6 +71,10 @@ export function useChat() {
   }, []);
 
   const startNewConversation = useCallback(() => {
+    activeSend.current += 1;
+    streamController.current?.abort();
+    streamController.current = null;
+    setIsSending(false);
     activeLoad.current += 1;
     setActiveId(null);
     setMessages([]);
@@ -74,8 +88,12 @@ export function useChat() {
 
     setIsSending(true);
     setError(null);
+    const sendId = ++activeSend.current;
+    const controller = new AbortController();
+    streamController.current = controller;
 
     const optimisticId = `optimistic-${Date.now()}`;
+    const streamingId = `streaming-${Date.now()}`;
     const optimisticMessage: ChatMessage = {
       id: optimisticId,
       role: "user",
@@ -95,9 +113,42 @@ export function useChat() {
         setConversations((current) => [created, ...current]);
       }
 
-      const turn = await sendChatMessage(conversationId, content);
+      let streamedContent = "";
+      const turn = await streamChatMessage(
+        conversationId,
+        content,
+        (delta) => {
+          if (activeSend.current !== sendId) return;
+          streamedContent += delta;
+          setMessages((current) => {
+            const streamingMessage = current.find((message) => message.id === streamingId);
+            if (streamingMessage) {
+              return current.map((message) =>
+                message.id === streamingId
+                  ? { ...message, content: streamedContent }
+                  : message,
+              );
+            }
+            return [
+              ...current,
+              {
+                id: streamingId,
+                role: "assistant",
+                content: streamedContent,
+                provider: null,
+                model: null,
+                created_at: new Date().toISOString(),
+              },
+            ];
+          });
+        },
+        controller.signal,
+      );
+      if (activeSend.current !== sendId) return true;
       setMessages((current) => [
-        ...current.filter((message) => message.id !== optimisticId),
+        ...current.filter((message) =>
+          message.id !== optimisticId && message.id !== streamingId
+        ),
         turn.user_message,
         turn.assistant_message,
       ]);
@@ -114,11 +165,20 @@ export function useChat() {
       );
       return true;
     } catch (requestError) {
-      setMessages((current) => current.filter((message) => message.id !== optimisticId));
+      if (requestError instanceof DOMException && requestError.name === "AbortError") {
+        return true;
+      }
+      if (activeSend.current !== sendId) return true;
+      setMessages((current) => current.filter((message) =>
+        message.id !== optimisticId && message.id !== streamingId
+      ));
       setError(requestError instanceof Error ? requestError.message : "Не удалось отправить сообщение");
       return false;
     } finally {
-      setIsSending(false);
+      if (activeSend.current === sendId) {
+        setIsSending(false);
+        streamController.current = null;
+      }
     }
   }, [activeId, isSending]);
 
