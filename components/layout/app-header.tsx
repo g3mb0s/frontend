@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth/context";
 
 export function AppHeader() {
-  const { user } = useAuth();
+  const { logout, user } = useAuth();
   const canManage = user?.role === "manager" || user?.role === "admin";
 
   return (
@@ -31,6 +32,9 @@ export function AppHeader() {
           <Link href="/profile" className="rounded-lg border border-slate-200 px-3 py-2 text-slate-700 transition hover:bg-slate-50">
             Профиль
           </Link>
+          <Button variant="ghost" onClick={logout}>
+            Выйти
+          </Button>
         </nav>
       </div>
     </header>

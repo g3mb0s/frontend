@@ -4,6 +4,8 @@ import type {
   CharacterConversation,
   CharacterConversationSummary,
   CharacterDefinition,
+  CharacterInput,
+  ManagedCharacter,
   CharacterTurn,
 } from "./types";
 
@@ -11,6 +13,67 @@ const API = "/api/ai";
 
 export async function listCharacters(): Promise<CharacterDefinition[]> {
   return readAiJson<CharacterDefinition[]>(await authFetch(`${API}/characters`));
+}
+
+export async function listManagedCharacters(
+  query = "",
+): Promise<ManagedCharacter[]> {
+  const characters = await readAiJson<ManagedCharacter[]>(
+    await authFetch(`${API}/admin/characters`),
+  );
+  const normalizedQuery = query.trim().toLocaleLowerCase();
+  if (!normalizedQuery) return characters;
+  return characters.filter(
+    (character) =>
+      character.name.toLocaleLowerCase().includes(normalizedQuery) ||
+      character.id.toLocaleLowerCase().includes(normalizedQuery),
+  );
+}
+
+export async function getManagedCharacter(
+  characterId: string,
+): Promise<ManagedCharacter> {
+  return readAiJson<ManagedCharacter>(
+    await authFetch(
+      `${API}/admin/characters/${encodeURIComponent(characterId)}`,
+    ),
+  );
+}
+
+export async function createCharacter(
+  input: CharacterInput,
+): Promise<ManagedCharacter> {
+  return readAiJson<ManagedCharacter>(
+    await authFetch(`${API}/admin/characters`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    }),
+  );
+}
+
+export async function updateCharacter(
+  characterId: string,
+  input: Omit<CharacterInput, "id">,
+): Promise<ManagedCharacter> {
+  return readAiJson<ManagedCharacter>(
+    await authFetch(
+      `${API}/admin/characters/${encodeURIComponent(characterId)}`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input),
+      },
+    ),
+  );
+}
+
+export async function deleteCharacter(characterId: string): Promise<void> {
+  const response = await authFetch(
+    `${API}/admin/characters/${encodeURIComponent(characterId)}`,
+    { method: "DELETE" },
+  );
+  if (!response.ok) await readAiJson<never>(response);
 }
 
 export async function listCharacterConversations(

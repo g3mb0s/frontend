@@ -26,7 +26,7 @@ export function CharacterChat({ characterId }: { characterId: string }) {
     <div className="flex h-[calc(100dvh-65px)] overflow-hidden bg-slate-100">
       <aside className="hidden w-72 shrink-0 flex-col border-r border-slate-200 bg-white lg:flex">
         <div className="border-b border-slate-100 p-6 text-center">
-          <CharacterAvatar size="lg" />
+          <CharacterAvatar size="lg" name={chat.character.name} />
           <h1 className="mt-4 text-lg font-bold">{chat.character.name}</h1>
           <p className="mt-1 text-xs font-medium text-sky-700">AI English partner</p>
           <p className="mt-3 text-xs leading-5 text-slate-500">{chat.character.description}</p>
@@ -52,7 +52,7 @@ export function CharacterChat({ characterId }: { characterId: string }) {
       <section className="flex min-w-0 flex-1 flex-col">
         <header className="flex h-16 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4 sm:px-6">
           <div className="flex items-center gap-3">
-            <CharacterAvatar size="sm" />
+            <CharacterAvatar size="sm" name={chat.character.name} />
             <div>
               <p className="text-sm font-bold">{chat.character.name} <span className="font-normal text-slate-400">· AI</span></p>
               <p className="flex items-center gap-1.5 text-[11px] text-slate-500"><span className="size-1.5 rounded-full bg-emerald-500" />English practice</p>

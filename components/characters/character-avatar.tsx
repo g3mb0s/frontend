@@ -2,9 +2,18 @@ import { cn } from "@/lib/utils/cn";
 
 export function CharacterAvatar({
   size = "md",
+  name = "AI",
 }: {
   size?: "sm" | "md" | "lg";
+  name?: string;
 }) {
+  const initials = name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toLocaleUpperCase())
+    .join("") || "AI";
+
   return (
     <div
       className={cn(
@@ -13,10 +22,10 @@ export function CharacterAvatar({
         size === "md" && "size-12 text-sm",
         size === "lg" && "size-20 text-xl",
       )}
-      aria-label="Lionel Messi AI avatar"
+      aria-label={`${name} AI avatar`}
     >
       <span className="absolute inset-x-0 bottom-0 h-2/5 bg-sky-600" />
-      <span className="relative">10</span>
+      <span className="relative">{initials}</span>
     </div>
   );
 }

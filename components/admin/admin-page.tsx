@@ -1,13 +1,13 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { AdminRoute } from "@/components/auth/admin-route";
 import { ManagerRoute } from "@/components/auth/manager-route";
 import { AdminNav } from "@/components/layout/admin-nav";
 import { AppHeader } from "@/components/layout/app-header";
 import { buttonClassName } from "@/components/ui/button";
 
-export function AdminPage({ title, description, createHref, createLabel, children }: { title: string; description?: string; createHref: string; createLabel: string; children: ReactNode }) {
-  return (
-    <ManagerRoute>
+export function AdminPage({ title, description, createHref, createLabel, adminOnly = false, children }: { title: string; description?: string; createHref: string; createLabel: string; adminOnly?: boolean; children: ReactNode }) {
+  const content = (
       <div className="min-h-screen bg-slate-50 text-slate-950">
         <AppHeader />
         <main className="mx-auto max-w-6xl px-6 py-10">
@@ -19,8 +19,8 @@ export function AdminPage({ title, description, createHref, createLabel, childre
           {children}
         </main>
       </div>
-    </ManagerRoute>
   );
+  return adminOnly ? <AdminRoute>{content}</AdminRoute> : <ManagerRoute>{content}</ManagerRoute>;
 }
 
 export function AdminMessage({ children }: { children: ReactNode }) {

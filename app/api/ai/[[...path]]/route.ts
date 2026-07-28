@@ -16,6 +16,14 @@ export async function POST(request: NextRequest, context: RouteContext) {
   return proxyAiRequest(request, context);
 }
 
+export async function PUT(request: NextRequest, context: RouteContext) {
+  return proxyAiRequest(request, context);
+}
+
+export async function DELETE(request: NextRequest, context: RouteContext) {
+  return proxyAiRequest(request, context);
+}
+
 async function proxyAiRequest(request: NextRequest, context: RouteContext) {
   const { path = [] } = await context.params;
   const upstreamUrl = new URL(`/${path.join("/")}`, AI_SERVICE_URL);

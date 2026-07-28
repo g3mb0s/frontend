@@ -40,7 +40,7 @@ export default function CharactersPage() {
             {characters.map((character) => (
               <Link key={character.id} href={`/characters/${character.id}`} className="group overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:border-sky-300 hover:shadow-xl">
                 <div className="flex items-center gap-5 bg-gradient-to-br from-sky-50 to-white p-6">
-                  <CharacterAvatar size="lg" />
+                  <CharacterAvatar size="lg" name={character.name} />
                   <div>
                     <span className="rounded-full bg-sky-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-sky-700">AI character</span>
                     <h2 className="mt-3 text-xl font-bold group-hover:text-sky-700">{character.name}</h2>

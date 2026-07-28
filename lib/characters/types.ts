@@ -6,6 +6,23 @@ export interface CharacterDefinition {
   disclaimer: string;
 }
 
+export interface ManagedCharacter extends CharacterDefinition {
+  instructions: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CharacterInput {
+  id: string;
+  name: string;
+  description: string;
+  greeting: string;
+  disclaimer: string;
+  instructions: string;
+  is_active: boolean;
+}
+
 export interface CharacterMessage {
   id: string;
   role: "user" | "assistant";

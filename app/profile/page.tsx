@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { ProtectedRoute } from "@/components/auth/protected-route";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth/context";
 
 export default function ProfilePage() {
-  const { user } = useAuth();
+  const { logout, user } = useAuth();
 
   return (
     <ProtectedRoute>
@@ -16,12 +17,17 @@ export default function ProfilePage() {
               <h1 className="text-xl font-semibold">Профиль</h1>
               <p className="mt-1 text-sm text-slate-500">Данные текущего аккаунта</p>
             </div>
-            <Link
-              href="/"
-              className="inline-flex h-10 items-center justify-center rounded-md border border-slate-300 px-4 text-sm font-medium text-slate-800 transition hover:bg-slate-50"
-            >
-              На главную
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link
+                href="/"
+                className="inline-flex h-10 items-center justify-center rounded-md border border-slate-300 px-4 text-sm font-medium text-slate-800 transition hover:bg-slate-50"
+              >
+                На главную
+              </Link>
+              <Button variant="danger" onClick={logout}>
+                Выйти
+              </Button>
+            </div>
           </div>
 
           <section className="rounded-lg border border-slate-200 bg-white">
