@@ -1,79 +1,77 @@
 "use client";
 
-import Hls from "hls.js";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { VideoPlayer, type VideoPlayerElement } from "@/components/ui/video-player";
 import type { Movie } from "@/lib/content/types";
+import { startStudyingClip } from "@/lib/progress/api";
 
 export function MoviePlayer({ movie }: { movie: Movie }) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const clipEndSeconds = useRef<number | null>(null);
+  const playerRef = useRef<VideoPlayerElement>(null);
+  const clipEndSecondsRef = useRef<number | null>(null);
+  const addingClipRef = useRef(false);
   const [playerError, setPlayerError] = useState<string | null>(null);
   const [activeClip, setActiveClip] = useState<number | null>(null);
-
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video || !movie.hls_url) return;
-    if (video.canPlayType("application/vnd.apple.mpegurl")) {
-      video.src = movie.hls_url;
-      return () => {
-        video.removeAttribute("src");
-        video.load();
-      };
-    }
-    if (!Hls.isSupported()) {
-      const timer = window.setTimeout(() => setPlayerError("Этот браузер не поддерживает HLS."), 0);
-      return () => window.clearTimeout(timer);
-    }
-    const hls = new Hls();
-    hls.loadSource(movie.hls_url);
-    hls.attachMedia(video);
-    hls.on(Hls.Events.ERROR, (_event, data) => {
-      if (data.fatal) setPlayerError("Не удалось воспроизвести HLS-поток.");
-    });
-    return () => hls.destroy();
-  }, [movie.hls_url]);
+  const [studyMessage, setStudyMessage] = useState<string | null>(null);
 
   function playClip(position: number, startMs: number, endMs: number) {
-    const video = videoRef.current;
-    if (!video) return;
-    clipEndSeconds.current = endMs / 1000;
+    const player = playerRef.current;
+    if (!player) return;
+    clipEndSecondsRef.current = endMs / 1000;
     setActiveClip(position);
-    video.currentTime = startMs / 1000;
-    void video.play();
+    player.currentTime = startMs / 1000;
+    void player.play();
   }
 
   function playFullMovie() {
-    clipEndSeconds.current = null;
+    clipEndSecondsRef.current = null;
     setActiveClip(null);
-    void videoRef.current?.play();
+    void playerRef.current?.play();
   }
 
-  function enforceClipEnd() {
-    const video = videoRef.current;
-    const end = clipEndSeconds.current;
-    if (video && end !== null && video.currentTime >= end) {
-      video.pause();
-      video.currentTime = end;
-      clipEndSeconds.current = null;
+  const addClipAtCurrentTime = useCallback(async () => {
+    const currentTimeMs = (playerRef.current?.currentTime ?? 0) * 1000;
+    const clip = movie.clips.find(
+      ({ start_ms, end_ms }) => currentTimeMs >= start_ms && currentTimeMs < end_ms,
+    );
+    if (!clip || addingClipRef.current) return;
+    addingClipRef.current = true;
+    setStudyMessage(null);
+    try {
+      await startStudyingClip(movie.id, clip.id);
+      setStudyMessage(`Клип ${clip.position + 1} добавлен для повторения.`);
+    } catch (error) {
+      setStudyMessage(error instanceof Error ? error.message : "Не удалось добавить клип.");
+    } finally {
+      addingClipRef.current = false;
     }
-  }
+  }, [movie]);
+
+  const enforceClipEnd = useCallback((player: VideoPlayerElement) => {
+    const end = clipEndSecondsRef.current;
+    if (end !== null && player.currentTime >= end) {
+      void player.pause();
+      player.currentTime = end;
+      clipEndSecondsRef.current = null;
+    }
+  }, []);
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
       <div>
-        <video
-          ref={videoRef}
-          controls
-          crossOrigin="anonymous"
-          preload="metadata"
+        <VideoPlayer
+          src={movie.hls_url}
+          title={movie.title}
+          playerRef={playerRef}
+          russianSubtitles={movie.subtitles.ru_url}
+          englishSubtitles={movie.subtitles.en_url}
+          showAddClipButton
+          onAddCurrentClip={addClipAtCurrentTime}
+          onError={setPlayerError}
           onTimeUpdate={enforceClipEnd}
-          className="aspect-video w-full rounded-2xl bg-black shadow-lg"
-        >
-          {movie.subtitles.ru_url && <track kind="subtitles" src={movie.subtitles.ru_url} srcLang="ru" label="Русский" default />}
-          {movie.subtitles.en_url && <track kind="subtitles" src={movie.subtitles.en_url} srcLang="en" label="English" />}
-        </video>
+        />
         {playerError && <p className="mt-3 rounded-lg bg-red-50 p-3 text-sm text-red-700">{playerError}</p>}
+        {studyMessage && <p className="mt-3 rounded-lg bg-indigo-50 p-3 text-sm text-indigo-700">{studyMessage}</p>}
       </div>
       <aside className="max-h-[min(70vh,620px)] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-4">
         <div className="flex items-center justify-between gap-3">

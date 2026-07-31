@@ -1,6 +1,6 @@
 import { authFetch } from "@/lib/auth/auth-fetch";
 import { getAccessToken } from "@/lib/auth/token-storage";
-import type { Article, ArticleInput, ContentOption, ContentStatus, Course, CourseInput, Exercise, ExerciseInput, Movie } from "./types";
+import type { Article, ArticleInput, ContentOption, ContentStatus, Course, CourseInput, Exercise, ExerciseInput, Movie, MoviePage } from "./types";
 
 const CONTENT_API = "/api/content";
 
@@ -109,8 +109,18 @@ export async function deleteExercise(id: string): Promise<void> {
   await ensureOk(response);
 }
 
-export async function listMovies(): Promise<Movie[]> {
-  return readEntityItems<Movie>(await fetch(`${CONTENT_API}/movies`));
+export async function listMovies(
+  { search = "", page = 1, pageSize = 12 }: { search?: string; page?: number; pageSize?: number } = {},
+  signal?: AbortSignal,
+): Promise<MoviePage> {
+  const query = new URLSearchParams({
+    page: String(page),
+    pageSize: String(pageSize),
+  });
+  if (search) query.set("search", search);
+  const response = await fetch(`${CONTENT_API}/movies?${query}`, { signal });
+  await ensureOk(response);
+  return (await response.json()) as MoviePage;
 }
 
 export async function getMovie(id: string): Promise<Movie> {

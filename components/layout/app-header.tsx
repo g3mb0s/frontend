@@ -21,6 +21,9 @@ export function AppHeader() {
           <Link href="/movies" className="rounded-lg px-3 py-2 text-slate-600 transition hover:bg-slate-100 hover:text-slate-950">
             Фильмы
           </Link>
+          <Link href="/clips" className="rounded-lg px-3 py-2 text-slate-600 transition hover:bg-slate-100 hover:text-slate-950">
+            Повторение
+          </Link>
           <Link href="/chat" className="rounded-lg px-3 py-2 text-slate-600 transition hover:bg-indigo-50 hover:text-indigo-700">
             ИИ-чат
           </Link>

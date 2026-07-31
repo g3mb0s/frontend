@@ -14,7 +14,7 @@ export default function AdminMoviesPage() {
           <AdminNav />
           <p className="text-sm font-semibold uppercase tracking-[0.16em] text-indigo-600">Управление контентом</p>
           <h1 className="mt-2 text-3xl font-bold tracking-tight">Фильмы</h1>
-          <p className="mt-2 text-sm text-slate-500">Загрузите видео и синхронные русские и английские SRT-файлы.</p>
+          <p className="mt-2 text-sm text-slate-500">Загрузите вертикальный постер, видео и синхронные русские и английские SRT-файлы.</p>
           <MovieManager />
         </main>
       </div>

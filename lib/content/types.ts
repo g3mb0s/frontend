@@ -156,6 +156,7 @@ export interface Movie {
   status: MovieStatus;
   duration_ms: number | null;
   hls_url: string | null;
+  thumbnail_url: string | null;
   subtitles: {
     ru_url: string | null;
     en_url: string | null;
@@ -164,4 +165,14 @@ export interface Movie {
   error_message?: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface MoviePage {
+  items: Movie[];
+  pagination: {
+    page: number;
+    page_size: number;
+    total: number;
+    total_pages: number;
+  };
 }
