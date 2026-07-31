@@ -4,8 +4,10 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   createCharacter,
+  deleteCharacterAvatar,
   getManagedCharacter,
   updateCharacter,
+  updateCharacterAvatar,
 } from "@/lib/characters/api";
 import type { CharacterInput } from "@/lib/characters/types";
 
@@ -24,6 +26,8 @@ export function useCharacterEditor(characterId?: string) {
   const [character, setCharacter] = useState<CharacterInput>(emptyCharacter);
   const [loading, setLoading] = useState(Boolean(characterId));
   const [saving, setSaving] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -39,6 +43,7 @@ export function useCharacterEditor(characterId?: string) {
           instructions: value.instructions,
           is_active: value.is_active,
         });
+        setAvatarUrl(value.avatar_url);
       })
       .catch((error: Error) => setMessage(error.message))
       .finally(() => setLoading(false));
@@ -75,5 +80,50 @@ export function useCharacterEditor(characterId?: string) {
     }
   }
 
-  return { character, loading, saving, message, update, save };
+  async function changeAvatar(file: File) {
+    if (!characterId) return;
+    setUploadingAvatar(true);
+    setMessage(null);
+    try {
+      const updated = await updateCharacterAvatar(characterId, file);
+      setAvatarUrl(updated.avatar_url);
+      setMessage("Аватар обновлён");
+    } catch (error) {
+      setMessage(
+        error instanceof Error ? error.message : "Не удалось обновить аватар",
+      );
+    } finally {
+      setUploadingAvatar(false);
+    }
+  }
+
+  async function removeAvatar() {
+    if (!characterId) return;
+    setUploadingAvatar(true);
+    setMessage(null);
+    try {
+      await deleteCharacterAvatar(characterId);
+      setAvatarUrl(null);
+      setMessage("Аватар удалён");
+    } catch (error) {
+      setMessage(
+        error instanceof Error ? error.message : "Не удалось удалить аватар",
+      );
+    } finally {
+      setUploadingAvatar(false);
+    }
+  }
+
+  return {
+    character,
+    avatarUrl,
+    loading,
+    saving,
+    uploadingAvatar,
+    message,
+    update,
+    save,
+    changeAvatar,
+    removeAvatar,
+  };
 }

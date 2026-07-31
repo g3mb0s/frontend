@@ -17,6 +17,10 @@ export function CharacterEditor({ characterId }: { characterId?: string }) {
         character={editor.character}
         editing={Boolean(characterId)}
         onChange={editor.update}
+        avatarUrl={editor.avatarUrl}
+        uploadingAvatar={editor.uploadingAvatar}
+        onAvatarChange={(file) => void editor.changeAvatar(file)}
+        onAvatarRemove={() => void editor.removeAvatar()}
       />
       <EditorActions
         message={editor.message}

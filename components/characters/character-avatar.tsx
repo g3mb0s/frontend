@@ -1,12 +1,19 @@
+"use client";
+
+import { useState } from "react";
 import { cn } from "@/lib/utils/cn";
 
 export function CharacterAvatar({
   size = "md",
   name = "AI",
+  avatarUrl,
 }: {
   size?: "sm" | "md" | "lg";
   name?: string;
+  avatarUrl?: string | null;
 }) {
+  const [failedUrl, setFailedUrl] = useState<string | null>(null);
+
   const initials = name
     .split(/\s+/)
     .filter(Boolean)
@@ -26,6 +33,15 @@ export function CharacterAvatar({
     >
       <span className="absolute inset-x-0 bottom-0 h-2/5 bg-sky-600" />
       <span className="relative">{initials}</span>
+      {avatarUrl && avatarUrl !== failedUrl && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={avatarUrl}
+          alt=""
+          className="absolute inset-0 size-full object-cover"
+          onError={() => setFailedUrl(avatarUrl)}
+        />
+      )}
     </div>
   );
 }

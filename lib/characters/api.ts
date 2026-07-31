@@ -68,6 +68,31 @@ export async function updateCharacter(
   );
 }
 
+export async function updateCharacterAvatar(
+  characterId: string,
+  avatar: File,
+): Promise<ManagedCharacter> {
+  const body = new FormData();
+  body.append("avatar", avatar);
+  return readAiJson<ManagedCharacter>(
+    await authFetch(
+      `${API}/admin/characters/${encodeURIComponent(characterId)}/avatar`,
+      { method: "PUT", body },
+    ),
+  );
+}
+
+export async function deleteCharacterAvatar(
+  characterId: string,
+): Promise<ManagedCharacter> {
+  return readAiJson<ManagedCharacter>(
+    await authFetch(
+      `${API}/admin/characters/${encodeURIComponent(characterId)}/avatar`,
+      { method: "DELETE" },
+    ),
+  );
+}
+
 export async function deleteCharacter(characterId: string): Promise<void> {
   const response = await authFetch(
     `${API}/admin/characters/${encodeURIComponent(characterId)}`,

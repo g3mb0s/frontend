@@ -4,6 +4,7 @@ export interface CharacterDefinition {
   description: string;
   greeting: string;
   disclaimer: string;
+  avatar_url: string | null;
 }
 
 export interface ManagedCharacter extends CharacterDefinition {

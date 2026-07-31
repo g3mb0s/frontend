@@ -1,5 +1,6 @@
 import { authFetch } from "@/lib/auth/auth-fetch";
-import type { Article, ArticleInput, ContentOption, ContentStatus, Course, CourseInput, Exercise, ExerciseInput } from "./types";
+import { getAccessToken } from "@/lib/auth/token-storage";
+import type { Article, ArticleInput, ContentOption, ContentStatus, Course, CourseInput, Exercise, ExerciseInput, Movie } from "./types";
 
 const CONTENT_API = "/api/content";
 
@@ -108,6 +109,58 @@ export async function deleteExercise(id: string): Promise<void> {
   await ensureOk(response);
 }
 
+export async function listMovies(): Promise<Movie[]> {
+  return readEntityItems<Movie>(await fetch(`${CONTENT_API}/movies`));
+}
+
+export async function getMovie(id: string): Promise<Movie> {
+  return readEntity<Movie>(await fetch(`${CONTENT_API}/movies/${id}`), "movie");
+}
+
+export async function listManagedMovies(): Promise<Movie[]> {
+  return readEntityItems<Movie>(await authFetch(`${CONTENT_API}/manage/movies`));
+}
+
+export async function reprocessMovie(id: string): Promise<Movie> {
+  return readEntity<Movie>(
+    await authFetch(`${CONTENT_API}/manage/movies/${id}/reprocess`, { method: "POST" }),
+    "movie",
+  );
+}
+
+export async function deleteMovie(id: string): Promise<void> {
+  await ensureOk(await authFetch(`${CONTENT_API}/manage/movies/${id}`, { method: "DELETE" }));
+}
+
+export function uploadMovie(formData: FormData, onProgress: (percent: number) => void): Promise<Movie> {
+  return new Promise((resolve, reject) => {
+    const request = new XMLHttpRequest();
+    request.open("POST", `${CONTENT_API}/manage/movies`);
+    const accessToken = getAccessToken();
+    if (accessToken) request.setRequestHeader("Authorization", `Bearer ${accessToken}`);
+    request.upload.onprogress = (event) => {
+      if (event.lengthComputable) onProgress(Math.round((event.loaded / event.total) * 100));
+    };
+    request.onerror = () => reject(new Error("Не удалось загрузить фильм"));
+    request.onload = () => {
+      let payload: { movie?: Movie; message?: string | string[] } = {};
+      try {
+        payload = JSON.parse(request.responseText) as typeof payload;
+      } catch {
+        // The generic message below covers non-JSON upstream failures.
+      }
+      if (request.status >= 200 && request.status < 300 && payload.movie) {
+        onProgress(100);
+        resolve(payload.movie);
+        return;
+      }
+      const message = Array.isArray(payload.message) ? payload.message.join(", ") : payload.message;
+      reject(new Error(message || "Не удалось загрузить фильм"));
+    };
+    request.send(formData);
+  });
+}
+
 interface ArticleListItem {
   id: string;
   title: string;
@@ -144,7 +197,7 @@ async function readEntityItems<T>(response: Response): Promise<T[]> {
   return ((await response.json()) as { items: T[] }).items;
 }
 
-async function readEntity<T>(response: Response, key: "article" | "exercise"): Promise<T> {
+async function readEntity<T>(response: Response, key: "article" | "exercise" | "movie"): Promise<T> {
   await ensureOk(response);
   return ((await response.json()) as Record<typeof key, T>)[key];
 }

@@ -140,3 +140,28 @@ export interface ExerciseInput {
   scoring: Record<string, unknown>;
   metadata: { version: number; status: ContentStatus };
 }
+
+export type MovieStatus = "queued" | "processing" | "ready" | "failed";
+
+export interface MovieClip {
+  id: string;
+  position: number;
+  start_ms: number;
+  end_ms: number;
+}
+
+export interface Movie {
+  id: string;
+  title: string;
+  status: MovieStatus;
+  duration_ms: number | null;
+  hls_url: string | null;
+  subtitles: {
+    ru_url: string | null;
+    en_url: string | null;
+  };
+  clips: MovieClip[];
+  error_message?: string | null;
+  created_at: string;
+  updated_at: string;
+}
