@@ -94,9 +94,7 @@ export function MovieCatalog() {
                         className="h-full w-full object-cover"
                       />
                     ) : (
-                      <div className="flex h-full items-center justify-center bg-gradient-to-br from-slate-100 to-slate-300 px-4 text-center text-sm font-medium text-slate-500">
-                        Нет постера
-                      </div>
+                      <div className="h-full w-full bg-black" aria-hidden="true" />
                     )}
                   </div>
                   <h2 className="mt-3 truncate font-semibold text-slate-950 group-hover:text-indigo-700">{movie.title}</h2>

@@ -48,7 +48,6 @@ export default function CharactersPage() {
                 </div>
                 <div className="p-6">
                   <p className="text-sm leading-6 text-slate-600">{character.description}</p>
-                  <p className="mt-5 text-sm font-semibold text-sky-700">Start conversation →</p>
                   <p className="mt-4 border-t border-slate-100 pt-4 text-[10px] leading-4 text-slate-400">{CHARACTER_DISCLAIMER}</p>
                 </div>
               </Link>

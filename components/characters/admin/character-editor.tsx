@@ -26,7 +26,6 @@ export function CharacterEditor({ characterId }: { characterId?: string }) {
       <EditorActions
         message={editor.message}
         saving={editor.saving}
-        onPreview={() => window.open(`/characters/${editor.character.id}`, "_blank")}
         onSave={() => void editor.save()}
       />
     </div>

@@ -40,7 +40,6 @@ export function Chat() {
             <SparkleIcon className="size-4 text-indigo-600" />
             Gembos AI
           </div>
-          <span className="rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-emerald-700">онлайн</span>
         </div>
 
         <div ref={scrollArea} className="flex min-h-0 flex-1 flex-col overflow-y-auto">

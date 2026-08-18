@@ -22,6 +22,7 @@ import {
 import {
   isHLSProvider,
   type MediaPlayerElement,
+  type TextTrackList,
 } from "vidstack";
 import { forwardRef, memo, useEffect, useMemo, useRef, type ReactNode, type RefObject } from "react";
 
@@ -31,6 +32,7 @@ export type VideoPlayerElement = MediaPlayerElement & {
   setAttribute(name: string, value: string): void;
   play(): Promise<void>;
   pause(): Promise<void>;
+  textTracks: TextTrackList;
 };
 
 type ClipRange = {
@@ -51,7 +53,10 @@ type VideoPlayerProps = {
   onTimeUpdate?: (player: VideoPlayerElement) => void;
 };
 
+type SubtitleLanguage = "ru" | "en" | "off";
+
 type CaptionSettings = {
+  language: SubtitleLanguage;
   fontSize: number;
   controlsOffset: number;
   color: "white" | "yellow" | "cyan";
@@ -61,6 +66,7 @@ type CaptionSettings = {
 
 const CAPTION_SETTINGS_STORAGE_KEY = "gembos:video-player:caption-settings";
 const DEFAULT_CAPTION_SETTINGS: CaptionSettings = {
+  language: "ru",
   fontSize: 24,
   controlsOffset: 12,
   color: "white",
@@ -91,6 +97,7 @@ export const VideoPlayer = memo(function VideoPlayer({
   const captionColorSelectRef = useRef<HTMLSelectElement>(null);
   const captionBackgroundSelectRef = useRef<HTMLSelectElement>(null);
   const captionOutlineSelectRef = useRef<HTMLSelectElement>(null);
+  const captionLanguageSelectRef = useRef<HTMLSelectElement>(null);
   const source = useMemo(
     () => src ? { src, type: "application/vnd.apple.mpegurl" } : undefined,
     [src],
@@ -101,6 +108,8 @@ export const VideoPlayer = memo(function VideoPlayer({
     const settings = readCaptionSettings();
     captionSettingsRef.current = settings;
     applyCaptionSettings(playerRef.current, settings);
+    applySubtitleLanguage(playerRef.current, settings.language);
+    if (captionLanguageSelectRef.current) captionLanguageSelectRef.current.value = settings.language;
     if (captionFontSizeInputRef.current) {
       captionFontSizeInputRef.current.value = String(settings.fontSize);
     }
@@ -172,6 +181,7 @@ export const VideoPlayer = memo(function VideoPlayer({
     const settings = { ...captionSettingsRef.current, [key]: value };
     captionSettingsRef.current = settings;
     applyCaptionSettings(playerRef.current, settings);
+    if (key === "language") applySubtitleLanguage(playerRef.current, settings.language);
     window.localStorage.setItem(CAPTION_SETTINGS_STORAGE_KEY, JSON.stringify(settings));
   }
 
@@ -181,8 +191,8 @@ export const VideoPlayer = memo(function VideoPlayer({
       src={source}
       title={title}
       crossorigin="anonymous"
-      load={clipRange ? "eager" : "visible"}
-      preload={clipRange ? "auto" : "metadata"}
+      load="eager"
+      preload="auto"
       playsinline
       onCanPlay={initializeClip}
       onLoadedMetadata={initializeClip}
@@ -190,6 +200,9 @@ export const VideoPlayer = memo(function VideoPlayer({
       onPlay={handlePlay}
       onProviderChange={(event: { detail: unknown }) => {
         if (isHLSProvider(event.detail)) event.detail.library = Hls;
+      }}
+      onTextTracksChange={() => {
+        applySubtitleLanguage(playerRef.current, captionSettingsRef.current.language);
       }}
       onTimeUpdate={handleTimeUpdate}
       className="gembos-video-player group block aspect-video w-full overflow-hidden rounded-2xl bg-black text-white shadow-lg data-[fullscreen]:h-full data-[fullscreen]:rounded-none"
@@ -204,7 +217,6 @@ export const VideoPlayer = memo(function VideoPlayer({
             src={russianSubtitles}
             srcLang="ru"
             label="Русский"
-            default
           />
         )}
         {englishSubtitles && (
@@ -338,6 +350,17 @@ export const VideoPlayer = memo(function VideoPlayer({
             </MediaMenuButton>
             <MediaMenuItems className="gap-3 text-left text-sm text-white">
               <p className="border-b border-white/15 pb-2 font-semibold">Субтитры</p>
+              <SettingSelect
+                ref={captionLanguageSelectRef}
+                label="Язык"
+                defaultValue={DEFAULT_CAPTION_SETTINGS.language}
+                onChange={(value) => updateCaptionSetting("language", value as SubtitleLanguage)}
+                options={[
+                  ["ru", "Русский"],
+                  ["en", "English"],
+                  ["off", "Выкл"],
+                ]}
+              />
               <SettingRange
                 ref={captionFontSizeInputRef}
                 valueRef={captionFontSizeValueRef}
@@ -526,12 +549,23 @@ function applyCaptionSettings(
   player.setAttribute("data-caption-outline", settings.outline);
 }
 
+function applySubtitleLanguage(player: VideoPlayerElement | null, language: SubtitleLanguage) {
+  if (!player) return;
+  for (const track of player.textTracks) {
+    const trackLanguage = track.language as string;
+    track.mode = language !== "off" && trackLanguage === language ? "showing" : "disabled";
+  }
+}
+
 function readCaptionSettings(): CaptionSettings {
   try {
     const saved = JSON.parse(
       window.localStorage.getItem(CAPTION_SETTINGS_STORAGE_KEY) ?? "{}",
     ) as Partial<CaptionSettings> & { size?: string; verticalOffset?: number };
     return {
+      language: isOneOf(saved.language, ["ru", "en", "off"])
+        ? saved.language
+        : DEFAULT_CAPTION_SETTINGS.language,
       fontSize: readFontSize(saved.fontSize, saved.size),
       controlsOffset: readNumberInRange(
         saved.controlsOffset ?? migrateLegacyOffset(saved.verticalOffset),

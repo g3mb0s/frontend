@@ -10,7 +10,17 @@ export function MovieView({ movieId }: { movieId: string }) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    void getMovie(movieId).then(setMovie).catch((reason: Error) => setError(reason.message));
+    let active = true;
+    void getMovie(movieId)
+      .then((nextMovie) => {
+        if (active) setMovie(nextMovie);
+      })
+      .catch((reason: Error) => {
+        if (active) setError(reason.message);
+      });
+    return () => {
+      active = false;
+    };
   }, [movieId]);
 
   if (error) return <p className="mt-10 rounded-xl bg-red-50 p-4 text-sm text-red-700">{error}</p>;

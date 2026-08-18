@@ -53,12 +53,15 @@ export function useCharacterChat(characterId: string) {
       setCharacter(selectedCharacter);
       setConversations(items);
       setState("ready");
-      if (items[0]) await selectConversation(items[0].id);
+      activeLoad.current += 1;
+      setActiveId(null);
+      setMessages([]);
+      setError(null);
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : "Could not load the character");
       setState("error");
     }
-  }, [characterId, selectConversation]);
+  }, [characterId]);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => void load(), 0);
@@ -90,11 +93,13 @@ export function useCharacterChat(characterId: string) {
     };
     setMessages((current) => [...current, optimistic]);
 
+    let isNewConversation = false;
     try {
       let conversationId = activeId;
       if (!conversationId) {
         const created = await createCharacterConversation(characterId);
         conversationId = created.id;
+        isNewConversation = true;
         setActiveId(created.id);
         setConversations((current) => [created, ...current]);
       }
@@ -106,7 +111,11 @@ export function useCharacterChat(characterId: string) {
       ]);
       setConversations((current) => current.map((conversation) =>
         conversation.id === conversationId
-          ? { ...conversation, title: content.slice(0, 80), updated_at: turn.assistant_message.created_at }
+          ? {
+              ...conversation,
+              ...(isNewConversation ? { title: content.slice(0, 80) } : {}),
+              updated_at: turn.assistant_message.created_at,
+            }
           : conversation
       ));
       return true;

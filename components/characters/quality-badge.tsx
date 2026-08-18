@@ -28,7 +28,7 @@ export function QualityBadge({
   if (quality === null) {
     return (
       <span
-        className="size-7 shrink-0 animate-pulse rounded-full bg-slate-200 ring-4 ring-white"
+        className="size-7 shrink-0 animate-pulse rounded-[33%] bg-slate-200"
         aria-label="Your English is being evaluated"
       />
     );
@@ -40,7 +40,7 @@ export function QualityBadge({
   return (
     <div ref={container} className="relative shrink-0">
       <button
-        className="grid size-7 place-items-center rounded-full text-[11px] font-black text-white shadow-sm ring-4 ring-white transition hover:scale-110 focus-visible:outline-none focus-visible:ring-indigo-300"
+        className="grid size-7 place-items-center rounded-[33%] text-[11px] font-black text-white shadow-sm transition hover:scale-110 focus-visible:outline-none focus-visible:ring-indigo-300"
         style={{ backgroundColor: color }}
         aria-label={`English score ${quality} out of 10. Show feedback`}
         aria-expanded={open}

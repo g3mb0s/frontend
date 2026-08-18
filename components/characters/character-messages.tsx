@@ -28,7 +28,7 @@ export function CharacterMessages({
         </div>
       )}
       {messages.map((message) => message.role === "user" ? (
-        <div key={message.id} className="flex items-end justify-end gap-2">
+        <div key={message.id} className="flex items-center justify-end gap-2">
           <QualityBadge quality={message.quality} correction={message.correction} comment={message.comment} />
           <div className="max-w-[78%] whitespace-pre-wrap rounded-2xl rounded-br-md bg-sky-600 px-4 py-3 text-sm leading-6 text-white shadow-sm">
             {message.content}

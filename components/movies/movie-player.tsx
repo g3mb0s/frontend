@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { VideoPlayer, type VideoPlayerElement } from "@/components/ui/video-player";
 import type { Movie } from "@/lib/content/types";
@@ -10,6 +10,10 @@ export function MoviePlayer({ movie }: { movie: Movie }) {
   const playerRef = useRef<VideoPlayerElement>(null);
   const clipEndSecondsRef = useRef<number | null>(null);
   const addingClipRef = useRef(false);
+  const movieRef = useRef(movie);
+  useEffect(() => {
+    movieRef.current = movie;
+  }, [movie]);
   const [playerError, setPlayerError] = useState<string | null>(null);
   const [activeClip, setActiveClip] = useState<number | null>(null);
   const [studyMessage, setStudyMessage] = useState<string | null>(null);
@@ -30,22 +34,23 @@ export function MoviePlayer({ movie }: { movie: Movie }) {
   }
 
   const addClipAtCurrentTime = useCallback(async () => {
+    const currentMovie = movieRef.current;
     const currentTimeMs = (playerRef.current?.currentTime ?? 0) * 1000;
-    const clip = movie.clips.find(
+    const clip = currentMovie.clips.find(
       ({ start_ms, end_ms }) => currentTimeMs >= start_ms && currentTimeMs < end_ms,
     );
     if (!clip || addingClipRef.current) return;
     addingClipRef.current = true;
     setStudyMessage(null);
     try {
-      await startStudyingClip(movie.id, clip.id);
+      await startStudyingClip(currentMovie.id, clip.id);
       setStudyMessage(`Клип ${clip.position + 1} добавлен для повторения.`);
     } catch (error) {
       setStudyMessage(error instanceof Error ? error.message : "Не удалось добавить клип.");
     } finally {
       addingClipRef.current = false;
     }
-  }, [movie]);
+  }, []);
 
   const enforceClipEnd = useCallback((player: VideoPlayerElement) => {
     const end = clipEndSecondsRef.current;
