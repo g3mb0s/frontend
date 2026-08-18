@@ -6,7 +6,7 @@ import { ProtectedRoute } from "@/components/auth/protected-route";
 import { CharacterAvatar } from "@/components/characters/character-avatar";
 import { AppHeader } from "@/components/layout/app-header";
 import { listCharacters } from "@/lib/characters/api";
-import type { CharacterDefinition } from "@/lib/characters/types";
+import { CHARACTER_DISCLAIMER, type CharacterDefinition } from "@/lib/characters/types";
 
 export default function CharactersPage() {
   const [characters, setCharacters] = useState<CharacterDefinition[]>([]);
@@ -49,7 +49,7 @@ export default function CharactersPage() {
                 <div className="p-6">
                   <p className="text-sm leading-6 text-slate-600">{character.description}</p>
                   <p className="mt-5 text-sm font-semibold text-sky-700">Start conversation →</p>
-                  <p className="mt-4 border-t border-slate-100 pt-4 text-[10px] leading-4 text-slate-400">{character.disclaimer}</p>
+                  <p className="mt-4 border-t border-slate-100 pt-4 text-[10px] leading-4 text-slate-400">{CHARACTER_DISCLAIMER}</p>
                 </div>
               </Link>
             ))}

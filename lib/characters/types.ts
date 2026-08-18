@@ -3,12 +3,12 @@ export interface CharacterDefinition {
   name: string;
   description: string;
   greeting: string;
-  disclaimer: string;
   avatar_url: string | null;
 }
 
 export interface ManagedCharacter extends CharacterDefinition {
-  instructions: string;
+  instructions: string | null;
+  character_prompt: string | null;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -19,8 +19,7 @@ export interface CharacterInput {
   name: string;
   description: string;
   greeting: string;
-  disclaimer: string;
-  instructions: string;
+  character_prompt: string;
   is_active: boolean;
 }
 
@@ -51,3 +50,6 @@ export interface CharacterTurn {
   user_message: CharacterMessage;
   assistant_message: CharacterMessage;
 }
+
+export const CHARACTER_DISCLAIMER =
+  "These characters are fictional AI personas for English practice, not real people or their representatives.";

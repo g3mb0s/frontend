@@ -108,9 +108,10 @@ export function MovieManager() {
               </div>
             </div>
             <div className="flex flex-wrap gap-2">
+              <Link href={`/admin/movies/${movie.id}`} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Редактировать</Link>
               {movie.status === "ready" && <Link href={`/movies/${movie.id}`} className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium hover:bg-slate-50">Смотреть</Link>}
               {(movie.status === "ready" || movie.status === "failed") && <Button onClick={() => void retry(movie.id)}>Обработать снова</Button>}
-              <Button variant="danger" disabled={movie.status === "processing"} onClick={() => void remove(movie.id)}>Удалить</Button>
+              <Button variant="danger" onClick={() => void remove(movie.id)}>Удалить</Button>
             </div>
           </div>
         ))}

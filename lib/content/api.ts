@@ -131,6 +131,17 @@ export async function listManagedMovies(): Promise<Movie[]> {
   return readEntityItems<Movie>(await authFetch(`${CONTENT_API}/manage/movies`));
 }
 
+export async function getManagedMovie(id: string): Promise<Movie> {
+  return readEntity<Movie>(await authFetch(`${CONTENT_API}/manage/movies/${id}`), "movie");
+}
+
+export async function updateMovie(id: string, formData: FormData): Promise<Movie> {
+  return readEntity<Movie>(
+    await authFetch(`${CONTENT_API}/manage/movies/${id}`, { method: "PATCH", body: formData }),
+    "movie",
+  );
+}
+
 export async function reprocessMovie(id: string): Promise<Movie> {
   return readEntity<Movie>(
     await authFetch(`${CONTENT_API}/manage/movies/${id}/reprocess`, { method: "POST" }),

@@ -16,8 +16,7 @@ const emptyCharacter: CharacterInput = {
   name: "",
   description: "",
   greeting: "",
-  disclaimer: "",
-  instructions: "",
+  character_prompt: "",
   is_active: true,
 };
 
@@ -29,6 +28,7 @@ export function useCharacterEditor(characterId?: string) {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [originallyHadPrompt, setOriginallyHadPrompt] = useState(false);
 
   useEffect(() => {
     if (!characterId) return;
@@ -39,10 +39,10 @@ export function useCharacterEditor(characterId?: string) {
           name: value.name,
           description: value.description,
           greeting: value.greeting,
-          disclaimer: value.disclaimer,
-          instructions: value.instructions,
+          character_prompt: value.character_prompt ?? "",
           is_active: value.is_active,
         });
+        setOriginallyHadPrompt(Boolean(value.character_prompt));
         setAvatarUrl(value.avatar_url);
       })
       .catch((error: Error) => setMessage(error.message))
@@ -54,6 +54,14 @@ export function useCharacterEditor(characterId?: string) {
   }
 
   async function save() {
+    if (
+      characterId &&
+      originallyHadPrompt &&
+      !character.character_prompt.trim()
+    ) {
+      setMessage("Заполните описание персонажа для AI (промт)");
+      return;
+    }
     setSaving(true);
     setMessage(null);
     try {
@@ -62,8 +70,7 @@ export function useCharacterEditor(characterId?: string) {
           name: character.name,
           description: character.description,
           greeting: character.greeting,
-          disclaimer: character.disclaimer,
-          instructions: character.instructions,
+          character_prompt: character.character_prompt,
           is_active: character.is_active,
         });
         setMessage("Изменения сохранены");
@@ -121,6 +128,7 @@ export function useCharacterEditor(characterId?: string) {
     saving,
     uploadingAvatar,
     message,
+    originallyHadPrompt,
     update,
     save,
     changeAvatar,

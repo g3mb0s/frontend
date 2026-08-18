@@ -7,6 +7,7 @@ import type { CharacterInput } from "@/lib/characters/types";
 export function CharacterForm({
   character,
   editing,
+  originallyHadPrompt,
   onChange,
   avatarUrl,
   uploadingAvatar,
@@ -15,6 +16,7 @@ export function CharacterForm({
 }: {
   character: CharacterInput;
   editing: boolean;
+  originallyHadPrompt: boolean;
   onChange: (patch: Partial<CharacterInput>) => void;
   avatarUrl: string | null;
   uploadingAvatar: boolean;
@@ -101,21 +103,36 @@ export function CharacterForm({
             required
           />
         </Field>
+        <Field label="Описание персонажа для AI (промт)" className="mt-5">
+          <Textarea
+            value={character.character_prompt}
+            onChange={(event) =>
+              onChange({ character_prompt: event.target.value })
+            }
+            className="min-h-40"
+            minLength={1}
+            maxLength={2000}
+            placeholder="Кто этот персонаж, какой у него характер и какие темы он обсуждает"
+          />
+        </Field>
+        <p className="mt-3 text-xs leading-5 text-slate-500">
+          Системный промт общий и уже задаёт язык, длину ответов и формат
+          оценки. Здесь опишите, кто этот персонаж и какие у него характер и
+          темы (до 2000 символов).
+        </p>
+        {editing && originallyHadPrompt && !character.character_prompt && (
+          <p className="mt-3 text-xs leading-5 text-amber-700">
+            Этот персонаж использует унаследованный промт. Пока поле пустое,
+            промт не изменится; заполните его, чтобы перейти на общий промт
+            (переход необратим из интерфейса).
+          </p>
+        )}
         <Field label="Первое приветствие" className="mt-5">
           <Textarea
             value={character.greeting}
             onChange={(event) => onChange({ greeting: event.target.value })}
             className="min-h-24"
             placeholder="Сообщение, которое пользователь увидит перед началом диалога"
-            required
-          />
-        </Field>
-        <Field label="Дисклеймер" className="mt-5">
-          <Textarea
-            value={character.disclaimer}
-            onChange={(event) => onChange({ disclaimer: event.target.value })}
-            className="min-h-20"
-            placeholder="Например: это вымышленная AI-роль, а не реальный человек"
             required
           />
         </Field>
@@ -126,22 +143,6 @@ export function CharacterForm({
             onChange={(is_active) => onChange({ is_active })}
           />
         </div>
-      </Card>
-
-      <Card>
-        <Field label="Системный промт">
-          <Textarea
-            value={character.instructions}
-            onChange={(event) => onChange({ instructions: event.target.value })}
-            className="min-h-96 font-mono text-xs leading-5"
-            placeholder="Опишите роль, стиль общения, ограничения и формат ответа…"
-            required
-          />
-        </Field>
-        <p className="mt-3 text-xs leading-5 text-slate-500">
-          AI должен возвращать структурированный ответ с полями text и rate
-          (quality 0–10, correction и comment). Укажите эти требования в промте.
-        </p>
       </Card>
     </div>
   );

@@ -17,7 +17,7 @@ export default function AdminCharactersPage() {
   return (
     <AdminPage
       title="AI-персонажи"
-      description="Настройте доступных собеседников и их системные промты."
+      description="Настройте доступных собеседников. Системный промт общий — вы задаёте только короткое описание персонажа."
       createHref="/admin/characters/new"
       createLabel="Новый персонаж"
       adminOnly

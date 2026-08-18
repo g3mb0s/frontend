@@ -16,6 +16,7 @@ export function CharacterEditor({ characterId }: { characterId?: string }) {
       <CharacterForm
         character={editor.character}
         editing={Boolean(characterId)}
+        originallyHadPrompt={editor.originallyHadPrompt}
         onChange={editor.update}
         avatarUrl={editor.avatarUrl}
         uploadingAvatar={editor.uploadingAvatar}

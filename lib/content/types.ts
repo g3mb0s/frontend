@@ -163,8 +163,18 @@ export interface Movie {
   };
   clips: MovieClip[];
   error_message?: string | null;
+  processing_logs?: MovieProcessingLog[];
   created_at: string;
   updated_at: string;
+}
+
+export interface MovieProcessingLog {
+  id: string;
+  processing_event_id: string;
+  level: "info" | "error";
+  stage: string;
+  message: string;
+  created_at: string;
 }
 
 export interface MoviePage {

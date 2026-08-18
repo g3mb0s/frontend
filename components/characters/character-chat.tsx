@@ -5,6 +5,7 @@ import { CharacterAvatar } from "./character-avatar";
 import { CharacterComposer } from "./character-composer";
 import { CharacterMessages } from "./character-messages";
 import { useCharacterChat } from "./use-character-chat";
+import { CHARACTER_DISCLAIMER } from "@/lib/characters/types";
 
 export function CharacterChat({ characterId }: { characterId: string }) {
   const chat = useCharacterChat(characterId);
@@ -46,7 +47,7 @@ export function CharacterChat({ characterId }: { characterId: string }) {
             </button>
           ))}
         </div>
-        <p className="border-t border-slate-100 p-4 text-[10px] leading-4 text-slate-400">{chat.character.disclaimer}</p>
+        <p className="border-t border-slate-100 p-4 text-[10px] leading-4 text-slate-400">{CHARACTER_DISCLAIMER}</p>
       </aside>
 
       <section className="flex min-w-0 flex-1 flex-col">
