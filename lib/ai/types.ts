@@ -2,10 +2,17 @@ import type { ExerciseInput, ExerciseType } from "@/lib/content/types";
 
 export type ChatRole = "user" | "assistant";
 
+export interface ChatToolCall {
+  id: string;
+  name: string;
+  arguments: string;
+}
+
 export interface ChatMessage {
   id: string;
   role: ChatRole;
   content: string;
+  tool_calls?: ChatToolCall[] | null;
   provider: string | null;
   model: string | null;
   created_at: string;
@@ -27,6 +34,17 @@ export interface ChatTurn {
   user_message: ChatMessage;
   assistant_message: ChatMessage;
 }
+
+export interface ToolCallSseEvent {
+  id: string;
+  name: string;
+  arguments: string;
+  note: string;
+}
+
+export type StreamChatResult =
+  | { kind: "done"; turn: ChatTurn }
+  | { kind: "tool_call"; id: string; name: string; arguments: string; note: string };
 
 export interface GenerateExerciseRequest {
   topic: string;

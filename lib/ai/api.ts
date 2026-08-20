@@ -5,6 +5,8 @@ import type {
   ConversationSummary,
   ExerciseGeneration,
   GenerateExerciseRequest,
+  StreamChatResult,
+  ToolCallSseEvent,
 } from "./types";
 
 const AI_API = "/api/ai";
@@ -50,23 +52,56 @@ export async function streamChatMessage(
   content: string,
   onDelta: (delta: string) => void,
   signal?: AbortSignal,
+): Promise<StreamChatResult> {
+  return streamSse(conversationId, { content }, onDelta, signal);
+}
+
+/** Фаза 2: продолжение после исполнения тула get_user_words на фронтенде. */
+export async function streamToolChatMessage(
+  conversationId: string,
+  toolCallId: string,
+  toolResult: string,
+  onDelta: (delta: string) => void,
+  signal?: AbortSignal,
 ): Promise<ChatTurn> {
+  const result = await streamSse(
+    conversationId,
+    { tool_call_id: toolCallId, tool_result: toolResult },
+    onDelta,
+    signal,
+  );
+  if (result.kind === "tool_call") {
+    throw new Error("ИИ вызвал тул при обработке результата тула");
+  }
+  return result.turn;
+}
+
+async function streamSse(
+  conversationId: string,
+  body: { content?: string; tool_call_id?: string; tool_result?: string },
+  onDelta: (delta: string) => void,
+  signal?: AbortSignal,
+): Promise<StreamChatResult> {
   const response = await authFetch(
     `${AI_API}/chat/conversations/${encodeURIComponent(conversationId)}/messages/stream`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content }),
+      body: JSON.stringify(body),
       signal,
     },
   );
-  if (!response.ok) return readAiJson<ChatTurn>(response);
+  if (!response.ok) {
+    await readAiJson<ChatTurn>(response);
+    throw new Error("Не удалось выполнить запрос к ИИ");
+  }
   if (!response.body) throw new Error("Браузер не поддерживает потоковые ответы");
 
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let buffer = "";
   let turn: ChatTurn | null = null;
+  let toolCall: ToolCallSseEvent | null = null;
 
   try {
     while (true) {
@@ -84,6 +119,8 @@ export async function streamChatMessage(
           if (payload.delta) onDelta(payload.delta);
         } else if (event.type === "done") {
           turn = JSON.parse(event.data) as ChatTurn;
+        } else if (event.type === "tool_call") {
+          toolCall = JSON.parse(event.data) as ToolCallSseEvent;
         } else if (event.type === "error") {
           const payload = JSON.parse(event.data) as { message?: string };
           throw new Error(payload.message || "Потоковый ответ ИИ завершился с ошибкой");
@@ -98,8 +135,18 @@ export async function streamChatMessage(
     reader.releaseLock();
   }
 
-  if (!turn) throw new Error("ИИ не завершил потоковый ответ");
-  return turn;
+  if (turn) return { kind: "done", turn };
+  // Конец потока без done принимается только если пришёл tool_call.
+  if (toolCall) {
+    return {
+      kind: "tool_call",
+      id: toolCall.id,
+      name: toolCall.name,
+      arguments: toolCall.arguments,
+      note: toolCall.note,
+    };
+  }
+  throw new Error("ИИ не завершил потоковый ответ");
 }
 
 export async function generateExercise(

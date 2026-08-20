@@ -1,15 +1,18 @@
 import type { ChatMessage } from "@/lib/ai/types";
 import { SparkleIcon } from "./chat-icons";
 import { MarkdownMessage } from "./markdown-message";
+import { ToolCard } from "./tool-card";
+import type { ActiveToolState } from "./use-chat";
 
 interface ChatMessagesProps {
   messages: ChatMessage[];
   state: "loading" | "ready" | "error";
   isSending: boolean;
   error: string | null;
+  activeTool: ActiveToolState | null;
 }
 
-export function ChatMessages({ messages, state, isSending, error }: ChatMessagesProps) {
+export function ChatMessages({ messages, state, isSending, error, activeTool }: ChatMessagesProps) {
   if (state === "loading") {
     return (
       <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-7 px-5 py-10">
@@ -33,7 +36,9 @@ export function ChatMessages({ messages, state, isSending, error }: ChatMessages
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6">
       <div className="space-y-8">
-        {messages.map((message) => (
+        {messages
+          .filter((message) => !message.tool_calls || message.tool_calls.length === 0)
+          .map((message) => (
           <article key={message.id} className={`flex gap-3 ${message.role === "user" ? "justify-end" : "justify-start"}`}>
             {message.role === "assistant" && (
               <div className="mt-1 grid size-8 shrink-0 place-items-center rounded-full bg-indigo-600 text-white shadow-sm">
@@ -51,7 +56,12 @@ export function ChatMessages({ messages, state, isSending, error }: ChatMessages
             </div>
           </article>
         ))}
-        {isSending && messages.at(-1)?.role !== "assistant" && (
+        {activeTool && (
+          <div role="status">
+            <ToolCard tool={activeTool} />
+          </div>
+        )}
+        {isSending && messages.at(-1)?.role !== "assistant" && !activeTool && (
           <div className="flex items-center gap-3 text-sm text-slate-400" role="status">
             <div className="grid size-8 place-items-center rounded-full bg-indigo-600 text-white">
               <SparkleIcon className="size-4" />

@@ -46,3 +46,20 @@ export interface SrsStats {
   known: number;
   with_errors: number;
 }
+
+export type SrsWordStatus =
+  | "new"
+  | "learning"
+  | "single_review"
+  | "recent"
+  | "due"
+  | "learned"
+  | "long_learned"
+  | "known";
+
+export interface WordListResult {
+  items: SrsWord[];
+  total: number;
+  offset: number;
+  limit: number;
+}

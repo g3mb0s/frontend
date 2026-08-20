@@ -1,11 +1,31 @@
 import { authFetch } from "@/lib/auth/auth-fetch";
-import type { SrsCardState, SrsCategory, SrsPreferences, SrsStats, SrsWord } from "./types";
+import type {
+  SrsCardState,
+  SrsCategory,
+  SrsPreferences,
+  SrsStats,
+  SrsWord,
+  SrsWordStatus,
+  WordListResult,
+} from "./types";
 
 const API = "/api/srs";
 
 export async function getNewWords(limit = 10): Promise<SrsWord[]> {
   const response = await read<{ items: SrsWord[] }>(await authFetch(`${API}/words/new?limit=${limit}`));
   return response.items;
+}
+
+export async function getUserWords(
+  params: { status?: SrsWordStatus; errors_only?: boolean; limit?: number; offset?: number } = {},
+): Promise<WordListResult> {
+  const search = new URLSearchParams();
+  if (params.status !== undefined) search.set("status", params.status);
+  if (params.errors_only !== undefined) search.set("errors_only", String(params.errors_only));
+  if (params.limit !== undefined) search.set("limit", String(params.limit));
+  if (params.offset !== undefined) search.set("offset", String(params.offset));
+  const query = search.toString();
+  return read<WordListResult>(await authFetch(`${API}/words${query ? `?${query}` : ""}`));
 }
 
 export async function getDueWords(limit = 10): Promise<SrsWord[]> {

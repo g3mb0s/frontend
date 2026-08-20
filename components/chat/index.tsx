@@ -45,7 +45,7 @@ export function Chat() {
         <div ref={scrollArea} className="flex min-h-0 flex-1 flex-col overflow-y-auto">
           {chat.messages.length === 0 && chat.messageState === "ready" && !chat.isSending && !chat.error
             ? <ChatWelcome onSelect={(prompt) => void chat.sendMessage(prompt)} />
-            : <ChatMessages messages={chat.messages} state={chat.messageState} isSending={chat.isSending} error={chat.error} />
+            : <ChatMessages messages={chat.messages} state={chat.messageState} isSending={chat.isSending} error={chat.error} activeTool={chat.activeTool} />
           }
         </div>
         <ChatComposer isSending={chat.isSending} onSend={chat.sendMessage} />
