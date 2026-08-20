@@ -1,6 +1,47 @@
 export type ContentStatus = "draft" | "published" | "archived";
 export type CourseEntryType = "article" | "exercise";
 
+export interface WordExample {
+  en?: string;
+  ru?: string;
+}
+
+export interface WordCategoryRef {
+  slug: string;
+  name_ru: string | null;
+  name_en: string | null;
+}
+
+export interface WordCategory {
+  slug: string;
+  name_ru: string | null;
+  name_en: string | null;
+  word_count: number;
+}
+
+export interface Word {
+  id: string;
+  word: string;
+  translation: string;
+  examples: WordExample[];
+  transcription: string | null;
+  status: ContentStatus;
+  tags: string[];
+  categories: WordCategoryRef[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface WordInput {
+  word: string;
+  translation: string;
+  examples: WordExample[];
+  transcription?: string;
+  status: ContentStatus;
+  tags: string[];
+  categories: string[];
+}
+
 export interface CourseEntryContent {
   id: string;
   title: string | null;

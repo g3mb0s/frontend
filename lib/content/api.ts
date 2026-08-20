@@ -1,6 +1,6 @@
 import { authFetch } from "@/lib/auth/auth-fetch";
 import { getAccessToken } from "@/lib/auth/token-storage";
-import type { Article, ArticleInput, ContentOption, ContentStatus, Course, CourseInput, Exercise, ExerciseInput, Movie, MoviePage } from "./types";
+import type { Article, ArticleInput, ContentOption, ContentStatus, Course, CourseInput, Exercise, ExerciseInput, Movie, MoviePage, Word, WordCategory, WordInput } from "./types";
 
 const CONTENT_API = "/api/content";
 
@@ -107,6 +107,37 @@ export async function updateExercise(id: string, input: ExerciseInput): Promise<
 export async function deleteExercise(id: string): Promise<void> {
   const response = await authFetch(`${CONTENT_API}/exercises/${id}`, { method: "DELETE" });
   await ensureOk(response);
+}
+
+export async function listManagedWords(search = ""): Promise<Word[]> {
+  const response = await authFetch(`${CONTENT_API}/manage/words${search ? `?search=${encodeURIComponent(search)}` : ""}`);
+  return readEntityItems<Word>(response);
+}
+
+export async function getManagedWord(id: string): Promise<Word> {
+  const response = await authFetch(`${CONTENT_API}/manage/words/${id}`);
+  return readEntity<Word>(response, "word");
+}
+
+export async function createWord(input: WordInput): Promise<Word> {
+  const response = await authFetch(`${CONTENT_API}/words`, jsonRequest("POST", input));
+  return readEntity<Word>(response, "word");
+}
+
+export async function updateWord(id: string, input: WordInput): Promise<Word> {
+  const response = await authFetch(`${CONTENT_API}/words/${id}`, jsonRequest("PATCH", input));
+  return readEntity<Word>(response, "word");
+}
+
+export async function deleteWord(id: string): Promise<void> {
+  const response = await authFetch(`${CONTENT_API}/words/${id}`, { method: "DELETE" });
+  await ensureOk(response);
+}
+
+export async function listWordCategories(): Promise<WordCategory[]> {
+  const response = await fetch(`${CONTENT_API}/words/categories`);
+  await ensureOk(response);
+  return ((await response.json()) as { items: WordCategory[] }).items;
 }
 
 export async function listMovies(
@@ -218,7 +249,7 @@ async function readEntityItems<T>(response: Response): Promise<T[]> {
   return ((await response.json()) as { items: T[] }).items;
 }
 
-async function readEntity<T>(response: Response, key: "article" | "exercise" | "movie"): Promise<T> {
+async function readEntity<T>(response: Response, key: "article" | "exercise" | "movie" | "word"): Promise<T> {
   await ensureOk(response);
   return ((await response.json()) as Record<typeof key, T>)[key];
 }

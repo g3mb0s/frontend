@@ -39,6 +39,7 @@ export function AppHeader() {
           {navLink("/courses", "Курсы", "bg-slate-100 text-slate-950")}
           {navLink("/movies", "Фильмы", "bg-slate-100 text-slate-950")}
           {navLink("/clips", "Повторение", "bg-slate-100 text-slate-950")}
+          {navLink("/words", "Слова", "bg-slate-100 text-slate-950")}
           {navLink("/chat", "ИИ-чат", "bg-indigo-100 text-indigo-700")}
           {navLink("/characters", "Персонажи", "bg-sky-100 text-sky-700")}
           {canManage && (

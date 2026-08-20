@@ -11,6 +11,7 @@ export function AdminNav() {
       <Link href="/admin/courses" className={linkClass}>Курсы</Link>
       <Link href="/admin/articles" className={linkClass}>Статьи</Link>
       <Link href="/admin/exercises" className={linkClass}>Упражнения</Link>
+      <Link href="/admin/words" className={linkClass}>Слова</Link>
       <Link href="/admin/movies" className={linkClass}>Фильмы</Link>
       {user?.role === "admin" && <Link href="/admin/characters" className={linkClass}>AI-персонажи</Link>}
     </nav>
